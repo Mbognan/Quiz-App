@@ -46,16 +46,19 @@ import PrimaryButton from '../PrimaryButton.vue';
 import { nextTick, ref } from 'vue';
 import { Toast, useToast } from 'primevue';
 import { showToast } from '@/utils/toast';
+import { defineEmits } from 'vue';
 const form = useForm({
     subject_code : '',
     subject_descriptive: '',
-    'subject': ''
+    subject: '',
+    status: 1,
 })
 const subjectInput = ref(null);
 
 
 const subjectCode = ref(null);
 const emit = defineEmits(['update:modelValue'])
+
 const {modelValue} = defineProps({
     modelValue: Boolean
 })
@@ -70,7 +73,8 @@ const toast = useToast(); // ✅ Ensure useToast is called
 function createSubject() {
     form.post(route('create.subject'), {
         preserveScroll: true,
-        onSuccess: () => {
+        onSuccess: (response) => {
+
             closeModal();
             form.reset();
 
@@ -79,11 +83,14 @@ function createSubject() {
                 severity: 'success',
                 summary: 'Success',
                 detail: 'Subject created successfully!',
-                life: 3000 // Toast disappears after 3 seconds
+                life: 3000
             });
+
+            const newSubject = response.props.subject; // Adjust based on your API response
+            emit('subject-create', newSubject); // Emit to SubjectTable
         },
         onError: (errors) => {
-            // ✅ Show error toast if something goes wrong
+
             toast.add({
                 severity: 'error',
                 summary: 'Error',
@@ -101,6 +108,10 @@ function closeModal(){
     emit('update:modelValue')
     form.clearErrors();
     form.reset();
+}
+function handleSubjectCreated(newSubject) {
+  emit('subject-created', newSubject);  // Emit the event with the new subject
+  // Optionally close the modal if you have logic to do so
 }
 
 </script>

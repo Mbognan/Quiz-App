@@ -23,15 +23,19 @@ class SubjectController extends Controller
             ]);
 
             try {
-                Subject::create([
+              $newSubject  =  Subject::create([
                     'subject' => $request->subject,
                     'subject_code' => $request->subject_code,
                     'subject_abrevation' => $request->subject_descriptive,
                     'status' => 1,
                 ]);
-
                 session()->flash('success', 'Subject created successfully');
-                return redirect()->route('index.subject');
+
+        // Pass the new subject to the frontend via Inertia
+        return Inertia::render('Subject', [
+            'subject' => Subject::all(),  // Fetch updated subjects
+            'newSubject' => $newSubject   // Optionally send the newly created subject
+        ]);
             } catch (\Exception $e) {
                 return back()->withErrors(['error' => 'Failed to create subject: ' . $e->getMessage()]); // ✅ Returns an Inertia-compatible error response
             }

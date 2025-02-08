@@ -6,7 +6,7 @@
 
       <div class="py-4">
         <!-- Pass subjects to the child component and listen for new-subject-added event -->
-        <SubjectTable :subjects="subjects" @new-subject-added="handleNewSubject"  />
+        <SubjectTable :subjects="subjects" @subject-created="handleNewSubject" />
       </div>
     </AuthenticatedLayout>
   </template>
@@ -15,21 +15,21 @@
     import { Inertia } from '@inertiajs/inertia'; // Correct import
   import SubjectTable from '@/Components/app/SubjectTable.vue';
   import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-  import { ref } from 'vue';
+  import { ref ,nextTick } from 'vue';
   import { usePage } from '@inertiajs/vue3';
+  import axios from 'axios';
 
-  // Access props from Inertia
   const { props } = usePage();
 
-  // Use `ref` to ensure reactivity
   const subjects = ref(props.subject);
 
-  // Handle new subject being added
-
+  console.log(subjects);
 
   function handleNewSubject(newSubject) {
-
-  subjects.value.push(newSubject);
+    subjects.value.push(newSubject);  // This should trigger reactivity, but we'll use nextTick to ensure DOM is updated
+  nextTick(() => {
+    console.log('New subject added, DOM should be updated now');
+  });
 }
   </script>
 
