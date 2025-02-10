@@ -97,6 +97,7 @@ function getStatusLabel(status) {
 
 
 function handleSubjectCreated(newSubject) {
+    console.log(newSubject);
   emit('subject-created', newSubject);  // Emit event to parent
 }
 

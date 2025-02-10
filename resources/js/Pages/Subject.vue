@@ -21,15 +21,17 @@
 
   const { props } = usePage();
 
-  const subjects = ref(props.subject);
+  const subjects = ref([...props.subject]);
 
   console.log(subjects);
-
   function handleNewSubject(newSubject) {
-    subjects.value.push(newSubject);  // This should trigger reactivity, but we'll use nextTick to ensure DOM is updated
-  nextTick(() => {
-    console.log('New subject added, DOM should be updated now');
-  });
+    console.log("New Subject Added:", newSubject);
+
+    if (newSubject && newSubject.subject) {
+        subjects.value = [...subjects.value, newSubject.subject]; // Add subject only
+    } else {
+        console.error("Invalid subject format:", newSubject);
+    }
 }
   </script>
 

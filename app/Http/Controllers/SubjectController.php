@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class SubjectController extends Controller
@@ -15,29 +16,33 @@ class SubjectController extends Controller
         ]);
     }
 
-    public function create(Request $request){
-            $request->validate([
-                'subject_descriptive' => 'required',
-                'subject_code' => 'required',
-                'subject' => 'required'
+    public function create(Request $request) {
+        $request->validate([
+            'subject_descriptive' => 'required',
+            'subject_code' => 'required',
+            'subject' => 'required'
+        ]);
+
+        try {
+            $subjects = Subject::create([
+                'subject' => $request->subject,
+                'subject_code' => $request->subject_code,
+                'subject_abrevation' => $request->subject_descriptive,
+                'status' => 1,
             ]);
 
-            try {
-              $newSubject  =  Subject::create([
-                    'subject' => $request->subject,
-                    'subject_code' => $request->subject_code,
-                    'subject_abrevation' => $request->subject_descriptive,
-                    'status' => 1,
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Subject created successfully',
+                    'subject' => $subjects
                 ]);
-                session()->flash('success', 'Subject created successfully');
-
-        // Pass the new subject to the frontend via Inertia
-        return Inertia::render('Subject', [
-            'subject' => Subject::all(),  // Fetch updated subjects
-            'newSubject' => $newSubject   // Optionally send the newly created subject
-        ]);
-            } catch (\Exception $e) {
-                return back()->withErrors(['error' => 'Failed to create subject: ' . $e->getMessage()]); // ✅ Returns an Inertia-compatible error response
             }
+
+            return Redirect::route('index.subject', compact(['subjects']))->with('success', 'Subject created successfully');
+
+        } catch (\Exception $e) {
+            return Redirect::back()->withErrors(['error' => 'Failed to create subject: ' . $e->getMessage()]);
+        }
     }
+
 }
