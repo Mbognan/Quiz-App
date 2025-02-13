@@ -41,6 +41,7 @@ Route::controller(\App\Http\Controllers\SubjectController::class)
     ->group(function(){
         Route::get('/subject', 'index')->name('index.subject');
         Route::post('/subject-create', 'create')->name('create.subject');
+        Route::put('/subject-update/{id}', 'update')->name('update.subject');
     });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

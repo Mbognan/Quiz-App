@@ -1,5 +1,3 @@
-
-
 <template>
     <div class="p-4 bg-white shadow-lg rounded-lg">
 
@@ -45,7 +43,7 @@
     <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
     <Column field="subject_code" header="Subject Code" sortable style="min-width: 12rem"></Column>
     <Column field="subject" header="Subject" sortable style="min-width: 10rem"></Column>
-    <Column field="subject_abrevation" header="Subject Descriptive" sortable style="min-width: 16rem"></Column>
+    <Column field="subject_descriptive" header="Subject Descriptive" sortable style="min-width: 16rem"></Column>
     <Column field="status" header="Status" sortable style="min-width: 10rem">
         <template #body="slotProps">
 
@@ -60,7 +58,7 @@
         </template>
     </Column>
 </DataTable>
-<SubjectModal v-model="createFolderModal"    @subject-create="handleSubjectCreated"   />
+<SubjectModal v-model="createFolderModal" :subject="selectedSubject"    @subject-create="handleSubjectCreated" @subject-updated="handleSubjectUpdated"   />
 <Toast />
 </div>
 
@@ -83,6 +81,7 @@ const emit = defineEmits(['subject-created']);
 const createFolderModal = ref(false);
 const selectedProducts = ref([]);
 const filters = ref({});
+const selectedSubject = ref(null);
 
 const props = defineProps({
   subjects: {
@@ -90,18 +89,27 @@ const props = defineProps({
     required: true
   }
 });
+
+
+
 function getStatusLabel(status) {
   return status === 1 ? 'success' : 'danger';
 }
-
-
 
 function handleSubjectCreated(newSubject) {
     console.log(newSubject);
   emit('subject-created', newSubject);  // Emit event to parent
 }
 
+function editProduct(subject){
+
+    selectedSubject.value = subject;
+    createFolderModal.value = true;
+}
+function handleSubjectUpdated(updatedSubject) {
+    const index = props.subjects.findIndex(subj => subj.id === updatedSubject.id);
+    if (index !== -1) {
+        props.subjects[index] = updatedSubject;
+    }
+}
 </script>
-
-
-

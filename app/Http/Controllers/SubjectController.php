@@ -27,9 +27,10 @@ class SubjectController extends Controller
             $subjects = Subject::create([
                 'subject' => $request->subject,
                 'subject_code' => $request->subject_code,
-                'subject_abrevation' => $request->subject_descriptive,
+                'subject_descriptive' => $request->subject_descriptive,
                 'status' => 1,
             ]);
+
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -43,6 +44,31 @@ class SubjectController extends Controller
         } catch (\Exception $e) {
             return Redirect::back()->withErrors(['error' => 'Failed to create subject: ' . $e->getMessage()]);
         }
+
     }
+
+    public function update($id, Request $request){
+        $subjects = subject::updateOrCreate(
+        ['id' => $id],
+            [
+            'subject' => $request->subject,
+            'subject_code' => $request->subject_code,
+            'subject_descriptive' => $request->subject_descriptive,
+            'status' => 1,
+        ]);
+        if($request->wantsJson()){
+            return response()->json([
+                'message' => 'Subject created successfully!',
+                'subject' => $subjects
+            ]);
+        }
+        return Redirect::route('index.subject', compact('subject'))->with('success', 'Updated subject successfully!');
+
+
+
+
+    }
+
+
 
 }

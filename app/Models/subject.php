@@ -11,7 +11,7 @@ class subject extends Model
     protected $fillable = [
         'subject',
         'subject_code',
-        'subject_abrevation',
+        'subject_descriptive',
         'status'
     ];
 }

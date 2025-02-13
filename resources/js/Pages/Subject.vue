@@ -23,7 +23,6 @@
 
   const subjects = ref([...props.subject]);
 
-  console.log(subjects);
   function handleNewSubject(newSubject) {
     console.log("New Subject Added:", newSubject);
 
@@ -33,8 +32,9 @@
         console.error("Invalid subject format:", newSubject);
     }
 }
+
+
+
   </script>
 
-  <style scoped>
-  /* Add any additional styling here */
-  </style>
+

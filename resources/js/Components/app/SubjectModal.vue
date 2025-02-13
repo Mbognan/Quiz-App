@@ -34,7 +34,7 @@
                 <SecondaryButton @click="closeModal" >
                     Close
                 </SecondaryButton>
-                <PrimaryButton   class="ml-3"   :disabled="form.processing" @click="createSubject" >
+                <PrimaryButton   class="ml-3"   :disabled="form.processing" @click="submitForm" >
                     Submit
                 </PrimaryButton>
             </div>
@@ -47,73 +47,104 @@
 <script setup>
 import Modal from '@/Components/Modal.vue';
 import InputLabel from '../InputLabel.vue';
-import TextInput from '../TextInput.vue';
 import InputError from '../InputError.vue';
 import SecondaryButton from '../SecondaryButton.vue';
 import { useForm } from '@inertiajs/vue3';
 import PrimaryButton from '../PrimaryButton.vue';
-import { nextTick, reactive, ref } from 'vue';
-import { FloatLabel,  Toast, useToast } from 'primevue';
-import { showToast } from '@/utils/toast';
-import { defineEmits } from 'vue';
+import { nextTick, reactive, ref, watch, defineProps, defineEmits } from 'vue';
+import { FloatLabel, useToast } from 'primevue';
 import axios from 'axios';
 import Textarea from 'primevue/textarea';
-
 import InputText from 'primevue/inputtext';
 
 const toast = useToast();
-const emit = defineEmits(['update:modelValue', 'subject-create']);
+const emit = defineEmits(['update:modelValue', 'subject-create', 'subject-updated']);
 
 const form = reactive({
-  subject_code: '',
-  subject: '',
-  subject_descriptive: '',
-  status: 1,
-  errors: {}
+    id: null,
+    subject_code: '',
+    subject: '',
+    subject_descriptive: '',
+    status: 1,
+    errors: {}
 });
-const {modelValue} = defineProps({
-    modelValue: Boolean
-})
 
+const props = defineProps({
+    modelValue: Boolean,
+    subject: Object
+});
 
-function onShow(){
-   nextTick(() => subjectCode.value.focus());
+// Autofill form when editing
+watch(() => props.subject, (newSubject) => {
+    if (newSubject) {
+        form.id = newSubject.id;
+        form.subject_code = newSubject.subject_code;
+        form.subject = newSubject.subject;
+        form.subject_descriptive = newSubject.subject_descriptive;
+        form.status = newSubject.status;
+    } else {
+        resetForm();
+    }
+}, { immediate: true });
+
+function onShow() {
+    nextTick(() => subjectCode.value?.focus());
 }
 
-async function createSubject() {
-  try {
-    const response = await axios.post(route('create.subject'), form);
-    const newSubject = response.data;
+async function submitForm() {
+    try {
 
-    emit('subject-create', newSubject); // Emit new subject to SubjectTable
-    closeModal();
+        if (form.id) {
+            // Update existing subject
+            const response = await axios.put(route('update.subject', form.id), form);
 
-    toast.add({
-      severity: 'success',
-      summary: 'Success',
-      detail: 'Subject created!',
-      life: 3000
-    });
-  } catch (error) {
-    if (error.response && error.response.status === 422) {
-      form.errors = error.response.data.errors;
+            emit('subject-updated', response.data);
+            toast.add({
+                severity: 'success',
+                summary: 'Updated',
+                detail: 'Subject updated successfully!',
+                life: 3000
+            });
+        } else {
+            console.log(form);
+            alert(form.subject);
+            // Create new subject
+            const response = await axios.post(route('create.subject'), form);
+            emit('subject-create', response.data);
+            console.log(response.data);
+            toast.add({
+                severity: 'success',
+                summary: 'Created',
+                detail: 'Subject created successfully!',
+                life: 3000
+            });
+        }
+        closeModal();
+    } catch (error) {
+        if (error.response && error.response.status === 422) {
+            form.errors = error.response.data.errors;
+        }
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to process the request.',
+            life: 3000
+        });
     }
-    toast.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Failed to create subject.',
-      life: 3000
-    });
-  }
 }
 
 function closeModal() {
-  emit('update:modelValue', false);
-  form.errors = {};
+    emit('update:modelValue', false);
+    resetForm();
+}
 
-  form.subject_code = '';
-  form.subject_descriptive = '';
-  form.subject = '';
+function resetForm() {
+    form.id = null;
+    form.subject_code = '';
+    form.subject = '';
+    form.subject_descriptive = '';
+    form.status = 1;
+    form.errors = {};
 }
 </script>
 
