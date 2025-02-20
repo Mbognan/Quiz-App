@@ -56,9 +56,14 @@ import { FloatLabel, useToast } from 'primevue';
 import axios from 'axios';
 import Textarea from 'primevue/textarea';
 import InputText from 'primevue/inputtext';
-
+import { Inertia } from '@inertiajs/inertia';
 const toast = useToast();
 const emit = defineEmits(['update:modelValue', 'subject-create', 'subject-updated']);
+
+const props = defineProps({
+    modelValue: Boolean,
+    subject: Object
+});
 
 const form = reactive({
     id: null,
@@ -67,11 +72,6 @@ const form = reactive({
     subject_descriptive: '',
     status: 1,
     errors: {}
-});
-
-const props = defineProps({
-    modelValue: Boolean,
-    subject: Object
 });
 
 // Autofill form when editing
@@ -87,51 +87,58 @@ watch(() => props.subject, (newSubject) => {
     }
 }, { immediate: true });
 
-function onShow() {
-    nextTick(() => subjectCode.value?.focus());
-}
-
-async function submitForm() {
+async function submitForm(event) {
+    event.preventDefault();
     try {
-
         if (form.id) {
-            // Update existing subject
-            const response = await axios.put(route('update.subject', form.id), form);
-
-            emit('subject-updated', response.data);
+            // Send update request via Axios
+            const response = await axios.put(route('update.subject', form.id), form, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            });
+            emit('subject-updated', response.data.subject);
             toast.add({
                 severity: 'success',
                 summary: 'Updated',
                 detail: 'Subject updated successfully!',
                 life: 3000
             });
+
+            closeModal();
         } else {
-            console.log(form);
-            alert(form.subject);
-            // Create new subject
+            // Create a new subject
             const response = await axios.post(route('create.subject'), form);
             emit('subject-create', response.data);
-            console.log(response.data);
             toast.add({
                 severity: 'success',
                 summary: 'Created',
                 detail: 'Subject created successfully!',
                 life: 3000
             });
+
+            closeModal();
         }
-        closeModal();
     } catch (error) {
-        if (error.response && error.response.status === 422) {
-            form.errors = error.response.data.errors;
+        console.error("AXIOS ERROR:", error); // ✅ Log the error in the console
+
+        if (error.response) {
+            console.log("ERROR RESPONSE:", error.response); // ✅ See full error details
+        } else {
+            console.log("ERROR MESSAGE:", error.message);
         }
+
         toast.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to process the request.',
+            detail: 'Something went wrong. Check console.',
             life: 3000
         });
     }
 }
+
+
 
 function closeModal() {
     emit('update:modelValue', false);

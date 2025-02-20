@@ -11,7 +11,9 @@ import Aura from '@primevue/themes/aura';
 import Toast from 'primevue/toast';
 import ToastService from 'primevue/toastservice';
 import 'primeicons/primeicons.css';
-
+import ConfirmationService from 'primevue/confirmationservice';
+import Breadcrumb from 'primevue/breadcrumb';
+import router from './router'; // Import Vue Router
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 const MyPreset = definePreset(Aura, {
     semantic: {
@@ -43,7 +45,10 @@ createInertiaApp({
                 },
 
             })
+            .use(router)
             .use(ToastService)
+            .use(ConfirmationService)
+            .use(Breadcrumb)
             .component('Toast', Toast)
             .mount(el);
     },

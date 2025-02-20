@@ -6,7 +6,7 @@
 
       <div class="py-4">
         <!-- Pass subjects to the child component and listen for new-subject-added event -->
-        <SubjectTable :subjects="subjects" @subject-created="handleNewSubject" />
+        <SubjectTable :subjects="subjects" @subject-created="handleNewSubject" @subject-updated="handleSubjectUpdated"  @subject-deleted="removeSubjectFromList"  />
       </div>
     </AuthenticatedLayout>
   </template>
@@ -27,11 +27,22 @@
     console.log("New Subject Added:", newSubject);
 
     if (newSubject && newSubject.subject) {
-        subjects.value = [...subjects.value, newSubject.subject]; // Add subject only
+        subjects.value = [...subjects.value, newSubject.subject];
     } else {
         console.error("Invalid subject format:", newSubject);
     }
 }
+function handleSubjectUpdated(updatedSubject) {
+    console.log("Subject Updated:", updatedSubject);
+    Inertia.reload({ only: ['subject'], preserveScroll: true });
+
+}
+
+function removeSubjectFromList(deletedId) {
+    subjects.value = subjects.value.filter(subject => subject.id !== deletedId);
+}
+
+
 
 
 

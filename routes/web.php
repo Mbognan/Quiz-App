@@ -33,8 +33,8 @@ Route::controller(\App\Http\Controllers\CourseOutcomeController::class)
     ->middleware(['auth'])
     ->group(function(){
         Route::get('/home', 'index')->name('index.home');
-
-
+        Route::get('/course-outcome', 'index')->name('course-outcome.index');
+        Route::get('/course-learning-outcomes/{id}', 'indexLo')->name('course-learning-outcome.index');
     });
 Route::controller(\App\Http\Controllers\SubjectController::class)
     ->middleware(['auth'])
@@ -42,7 +42,9 @@ Route::controller(\App\Http\Controllers\SubjectController::class)
         Route::get('/subject', 'index')->name('index.subject');
         Route::post('/subject-create', 'create')->name('create.subject');
         Route::put('/subject-update/{id}', 'update')->name('update.subject');
+        Route::delete('/subject-delete/{id}', 'delete')->name('delete.subject');
     });
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

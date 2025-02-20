@@ -8,8 +8,7 @@
     </template>
 
     <template #end>
-        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" customUpload chooseLabel="Import" class="mr-2" auto :chooseButtonProps="{ severity: 'secondary' }" />
-        <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
+
     </template>
 </Toolbar>
 
@@ -58,38 +57,43 @@
         </template>
     </Column>
 </DataTable>
-<SubjectModal v-model="createFolderModal" :subject="selectedSubject"    @subject-create="handleSubjectCreated" @subject-updated="handleSubjectUpdated"   />
+<SubjectModal
+    v-model="createFolderModal"
+     :subject="selectedSubject"
+    @subject-create="handleSubjectCreated"
+    @subject-updated="handleSubjectUpdated"    />
 <Toast />
 </div>
-
+<ConfirmDialog></ConfirmDialog>
 </template>
 
 <script setup>
-import { Button, Column, DataTable, FileUpload, IconField, InputIcon, InputText, Tag, Toast, Toolbar } from "primevue";
+import { Button, Column, ConfirmDialog, DataTable, FileUpload, IconField, InputIcon, InputText, Tag, Toast, Toolbar } from "primevue";
 import SubjectModal from '@/Components/app/SubjectModal.vue';
 import { useToast } from 'primevue/usetoast';
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, defineProps, defineEmits, watch } from 'vue';
 import PrimaryButton from '../PrimaryButton.vue';
 import DangerButton from "../DangerButton.vue";
+import { useConfirm } from "primevue/useconfirm";
+import axios from "axios";
 
-const emit = defineEmits(['subject-created']);
+const emit = defineEmits(['subject-created', 'subject-updated']);
     function showCreateFolderModal(){
         createFolderModal.value = true;
     }
 
-
+const confirm = useConfirm();
 const createFolderModal = ref(false);
 const selectedProducts = ref([]);
 const filters = ref({});
 const selectedSubject = ref(null);
-
+const toast = useToast();
 const props = defineProps({
   subjects: {
     type: Array,
     required: true
   }
 });
-
 
 
 function getStatusLabel(status) {
@@ -106,10 +110,55 @@ function editProduct(subject){
     selectedSubject.value = subject;
     createFolderModal.value = true;
 }
+
+
+
+const subjectsList = ref([...props.subjects]);
+
+watch(() => props.subjects, (newSubjects) => {
+    subjectsList.value = newSubjects;
+}, { deep: true }); // ✅ Reacts to deep changes
+
 function handleSubjectUpdated(updatedSubject) {
-    const index = props.subjects.findIndex(subj => subj.id === updatedSubject.id);
-    if (index !== -1) {
-        props.subjects[index] = updatedSubject;
-    }
+    console.log("Emitting subject-updated event", updatedSubject);
+    emit('subject-updated', updatedSubject);  // Notify parent
 }
+
+
+function confirmDeleteProduct(subject){
+    confirm.require({
+        message: `Do you want to delete this subject: ${subject.subject}`,
+        header: 'Danger Zone',
+        icon: 'pi pi-info-circle',
+        rejectLabel: 'Cancel',
+        rejectProps: {
+            label: 'Cancel',
+            severity: 'secondary',
+            outlined: true
+        },
+        acceptProps: {
+            label: 'Delete',
+            severity: 'danger'
+        },
+        accept: async () => {
+            try{
+                const response = await axios.delete(`subject-delete/${subject.id}`);
+                toast.add({ severity: 'success', summary: 'Deleted Successfully!', detail: response.data.message, life: 3000 });
+                emit('subject-deleted', subject.id);
+            }  catch (error) {
+                toast.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete subject', life: 3000 });
+                console.error(error);
+            }
+        },
+
+
+        // reject: () => {
+        //     toast.add({ severity: 'error', summary: 'Cancel', detail: 'You have cancel the action!', life: 2000 });
+        // }
+    });
+
+}
+
+
+
 </script>

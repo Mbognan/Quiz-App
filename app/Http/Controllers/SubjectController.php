@@ -46,27 +46,38 @@ class SubjectController extends Controller
         }
 
     }
+    public function update($id, Request $request)
+    {
 
-    public function update($id, Request $request){
-        $subjects = subject::updateOrCreate(
-        ['id' => $id],
-            [
+
+        // Check if the subject exists
+        $subject = Subject::findOrFail($id);
+
+        // Update the subject data
+        $subject->update([
             'subject' => $request->subject,
             'subject_code' => $request->subject_code,
             'subject_descriptive' => $request->subject_descriptive,
-            'status' => 1,
+            'status' => 1, // or based on input
         ]);
-        if($request->wantsJson()){
-            return response()->json([
-                'message' => 'Subject created successfully!',
-                'subject' => $subjects
-            ]);
-        }
-        return Redirect::route('index.subject', compact('subject'))->with('success', 'Updated subject successfully!');
 
+        // Return the updated subject as a response
+        return response()->json([
+            'message' => 'Subject updated successfully!',
+            'subject' => $subject,
+        ]);
+    }
 
-
-
+    public function delete($id){
+       try {
+        $subject = subject::findOrFail($id);
+        $subject->delete();
+        return response()->json([
+            'message' =>'Subject deleted successfully!',
+        ]);
+       } catch (\Throwable $th) {
+        //throw $th;
+       }
     }
 
 
