@@ -34,8 +34,9 @@ Route::controller(\App\Http\Controllers\CourseOutcomeController::class)
     ->group(function(){
         Route::get('/home', 'index')->name('index.home');
         Route::get('/course-outcome', 'index')->name('course-outcome.index');
-        Route::get('/course-learning-outcomes/{id}', 'indexLo')->name('course-learning-outcome.index');
+        Route::get('/learning-objectives/{id}', 'indexLo')->name('learning-objectives.index'); // ✅ Fix route name
     });
+
 Route::controller(\App\Http\Controllers\SubjectController::class)
     ->middleware(['auth'])
     ->group(function(){
